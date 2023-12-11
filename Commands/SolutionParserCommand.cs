@@ -27,7 +27,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
 
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings)
     {
-        InitializeMSBuilePath(settings.Sdk);
+        InitializeMSBuildPath(settings.Sdk);
 
         string solutionPath = Path.GetFullPath(settings.Solution);
         IEnumerable<ProjectRecord>? projFiles = null;
@@ -104,7 +104,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
 
             var assembly = proj.GetPropertyValue("TargetPath");
             var outputType = proj.GetPropertyValue("outputType");
-            var desingerHostPath = proj.GetPropertyValue("AvaloniaPreviewerNetCoreToolPath");
+            var designerHostPath = proj.GetPropertyValue("AvaloniaPreviewerNetCoreToolPath");
 
             var targetfx = proj.GetPropertyValue("TargetFramework");
             var projectDepsFilePath = proj.GetPropertyValue("ProjectDepsFilePath");
@@ -112,7 +112,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
 
             var references = proj.GetItems("ProjectReference");
             var referencesPath = references.Select(p => Path.GetFullPath(p.EvaluatedInclude, projPath)).ToArray();
-            desingerHostPath = string.IsNullOrEmpty(desingerHostPath) ? "" : Path.GetFullPath(desingerHostPath);
+            designerHostPath = string.IsNullOrEmpty(designerHostPath) ? "" : Path.GetFullPath(designerHostPath);
 
             var intermediateOutputPath = GetIntermediateOutputPath(proj);
 
@@ -122,7 +122,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
                 Path = projPath,
                 TargetPath = assembly,
                 OutputType = outputType,
-                DesignerHostPath = desingerHostPath,
+                DesignerHostPath = designerHostPath,
 
                 TargetFramework = targetfx,
                 DepsFilePath = projectDepsFilePath,
@@ -156,7 +156,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
         return iop;
     }
 
-    static void InitializeMSBuilePath(string sdk)
+    static void InitializeMSBuildPath(string sdk)
     {
         try
         {
