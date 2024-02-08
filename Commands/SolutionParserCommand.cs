@@ -105,8 +105,8 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
             var outputType = proj.GetPropertyValue("outputType");
             var designerHostPath = proj.GetPropertyValue("AvaloniaPreviewerNetCoreToolPath");
 
-            var targetfx = proj.GetPropertyValue("TargetFramework");
-            var targetfxs = proj.GetPropertyValue("TargetFrameworks").Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var targetFramework = proj.GetPropertyValue("TargetFramework");
+            var targetFrameworks = proj.GetPropertyValue("TargetFrameworks").Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             var projectDepsFilePath = proj.GetPropertyValue("ProjectDepsFilePath");
             var projectRuntimeConfigFilePath = proj.GetPropertyValue("ProjectRuntimeConfigFilePath");
 
@@ -124,8 +124,8 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
                 OutputType = outputType,
                 DesignerHostPath = designerHostPath,
 
-                TargetFramework = targetfx,
-                TargetFrameworks = targetfxs,
+                TargetFramework = targetFramework,
+                TargetFrameworks = targetFrameworks,
                 DepsFilePath = projectDepsFilePath,
                 RuntimeConfigFilePath = projectRuntimeConfigFilePath,
 
