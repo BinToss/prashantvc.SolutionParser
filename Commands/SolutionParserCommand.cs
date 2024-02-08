@@ -96,7 +96,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
         return 0;
     }
 
-    Project? GetProjectDetails(string name, string projPath)
+    static Project? GetProjectDetails(string name, string projPath)
     {
         try
         {
