@@ -57,7 +57,20 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
         {
             var projectDetails = GetProjectDetails(proj.Name, proj.Path);
             if (projectDetails != null)
-                projects.Add(projectDetails);
+            {
+
+                // if the project multi-targets, re-evaluate the project with each target framework
+                if (projectDetails.TargetFrameworks.Length > 0)
+                {
+                    Parallel.ForEach(projectDetails.TargetFrameworks, tfm =>
+                    {
+                        var projectPermutation = GetProjectDetails(proj.Name, proj.Path, tfm);
+                        if (projectPermutation != null)
+                            projects.Add(projectPermutation);
+                    });
+                }
+                else { projects.Add(projectDetails); }
+            }
         });
 
         var allProjects = projects.ToList();
@@ -95,18 +108,25 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
         return 0;
     }
 
-    static Project? GetProjectDetails(string name, string projPath)
+    static Project? GetProjectDetails(string name, string projPath, TFM? tfm = null)
     {
         try
         {
-            var proj = MSProject.FromFile(projPath, new ProjectOptions());
+            Dictionary<string, string> globalProps = [];
+            if (tfm is not null)
+                globalProps.Add("TargetFramework", tfm);
+            var proj = MSProject.FromFile(projPath, new ProjectOptions { GlobalProperties = globalProps });
 
             var assembly = proj.GetPropertyValue("TargetPath");
             var outputType = proj.GetPropertyValue("outputType");
             var designerHostPath = proj.GetPropertyValue("AvaloniaPreviewerNetCoreToolPath");
 
-            var targetFramework = proj.GetPropertyValue("TargetFramework");
-            var targetFrameworks = proj.GetPropertyValue("TargetFrameworks").Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var targetFramework = (TFM)proj.GetPropertyValue("TargetFramework");
+            var targetFrameworks = Array.ConvertAll(
+                proj.GetPropertyValue("TargetFrameworks")
+                    .Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries),
+                (str) => (TFM)str
+            );
             var projectDepsFilePath = proj.GetPropertyValue("ProjectDepsFilePath");
             var projectRuntimeConfigFilePath = proj.GetPropertyValue("ProjectRuntimeConfigFilePath");
 
@@ -137,7 +157,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error parsing project {name}: {ex.Message}");
+            Console.Error.WriteLine($"Error parsing project {name}: {ex.Message}");
             return null;
         }
     }
