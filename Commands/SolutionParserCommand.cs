@@ -162,17 +162,57 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
         }
     }
 
+    /*  The name of this function is...misleading.
+        It implies the return value is the evaluated value of IntermediateOutputPath (obj)!
+     */
+
+    /// <summary>Get the path of the 'references' files under IntermediateOutputPath (obj)</summary>
+    /// <param name="proj">The evaluated representation of the project</param>
+    /// <returns>The path to the file at <c>obj/**/Avalonia/references</c>, depending on certain build parameters</returns>
+    /// <remarks>The returned string may be a nonexisting file if more build parameters (e.g. --framework) are required.</remarks>
     static string GetIntermediateOutputPath(MSProject proj)
     {
+        /* "C:\Projects\RepoRoot\src\ProjectA\obj\Debug\net8.0\Avalonia\references"
+           "C:\Projects\RepoRoot\artifacts\obj\ProjectA\net8.0\Avalonia\references"
+           "C:\Projects\RepoRoot\artifacts\obj\ProjectA\debug_net8.0\Avalonia\references"
+        */
+        bool useArtifacts = proj.GetPropertyValue("UseArtifactsOutput").ToUpperInvariant() == "TRUE";
+        string tfm = !useArtifacts ? proj.GetPropertyValue("TargetFramework") : ""; // unneeded if useArtifacts
+        string[] tfms = proj.GetPropertyValue("TargetFrameworks").Split(';', StringSplitOptions.RemoveEmptyEntries);
+        if (!useArtifacts && tfm == "")
+        {
+            if (tfms.Length == 0)
+                Console.Error.WriteLine(new Exception($"The project '{Path.GetFileName(proj.FullPath)}' does not define TargetFramework nor TargetFrameworks! Is this not an SDK-style project?"));
+            else
+                tfm = tfms[0];
+        }
+        // if useArtifacts, C:\Projects\RepoRoot\artifacts\obj\ProjectA\debug\
+        // useArtifacts && tfm: C:\Projects\RepoRoot\artifacts\obj\ProjectA\debug_net8.0\
         var intermediateOutputPath = proj.GetPropertyValue("IntermediateOutputPath");
-        var iop = Path.Combine(intermediateOutputPath, "Avalonia", "references");
+        string? iop = "";
+        if (useArtifacts)
+        {
+            // todo: hmmm... get "../debug*/"? But which paths are "stale"?
+        }
+        else if (tfm != "")
+            iop = Path.Combine(intermediateOutputPath, tfm, "Avalonia", "references");
+        else
+            iop = Path.Combine(intermediateOutputPath, "Avalonia", "references");
 
         if (!Path.IsPathRooted(intermediateOutputPath))
         {
-            iop = Path.Combine(proj.DirectoryPath ?? "", iop);
-            if (Path.DirectorySeparatorChar == '/')
-                iop = iop.Replace("\\", "/");
+            if (useArtifacts)
+            {
+                // todo
+            }
+            else
+            {
+                iop = Path.Combine(proj.DirectoryPath ?? "", iop);
+            }
         }
+
+        if (Path.DirectorySeparatorChar == '/')
+            iop = iop.Replace("\\", "/");
 
         return iop;
     }
