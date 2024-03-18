@@ -2,6 +2,15 @@ using System.Text.Json.Serialization;
 using MSProject = Microsoft.Build.Evaluation.Project;
 
 namespace Models;
+/// <summary>
+/// A simplified representation of the .NET Project.
+/// Properties have been evaluated with Microsoft.Build.Evaluation.
+/// </summary>
+/// <remarks>
+/// If TargetFrameworks (plural) is defined, the project must re-evaluated for
+/// each TargetFramework. Otherwise, properties may be undefined or have
+/// unexpected values.
+/// </remarks>
 internal class Project
 {
     public required string Name { get; set; }
