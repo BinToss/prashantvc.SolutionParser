@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using Microsoft.Build.Definition;
 using MSProject = Microsoft.Build.Evaluation.Project;
 using System.Text.Json;
-using System.Drawing;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -107,6 +106,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
             var designerHostPath = proj.GetPropertyValue("AvaloniaPreviewerNetCoreToolPath");
 
             var targetfx = proj.GetPropertyValue("TargetFramework");
+            var targetfxs = proj.GetPropertyValue("TargetFrameworks").Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             var projectDepsFilePath = proj.GetPropertyValue("ProjectDepsFilePath");
             var projectRuntimeConfigFilePath = proj.GetPropertyValue("ProjectRuntimeConfigFilePath");
 
@@ -125,6 +125,7 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
                 DesignerHostPath = designerHostPath,
 
                 TargetFramework = targetfx,
+                TargetFrameworks = targetfxs,
                 DepsFilePath = projectDepsFilePath,
                 RuntimeConfigFilePath = projectRuntimeConfigFilePath,
 
