@@ -122,11 +122,9 @@ public sealed class SolutionParserCommand : Command<SolutionParserCommand.Settin
             var designerHostPath = proj.GetPropertyValue("AvaloniaPreviewerNetCoreToolPath");
 
             var targetFramework = (TFM)proj.GetPropertyValue("TargetFramework");
-            var targetFrameworks = Array.ConvertAll(
-                proj.GetPropertyValue("TargetFrameworks")
-                    .Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries),
-                (str) => (TFM)str
-            );
+            var targetFrameworks = (TFM[])proj.GetPropertyValue("TargetFrameworks")
+                .Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .Select((str) => (TFM)str);
             var projectDepsFilePath = proj.GetPropertyValue("ProjectDepsFilePath");
             var projectRuntimeConfigFilePath = proj.GetPropertyValue("ProjectRuntimeConfigFilePath");
 
